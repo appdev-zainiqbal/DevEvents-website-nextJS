@@ -78,6 +78,12 @@ const eventSchema = new Schema<IEvent>(
       type: String,
       required: [true, 'Event date is required'],
       trim: true,
+      validate: {
+        validator: (v: string) => {
+          return /^\d{4}-\d{2}-\d{2}$/.test(v.trim());
+        },
+        message: 'Date must be in YYYY-MM-DD format',
+      },
     },
     time: {
       type: String,
@@ -140,14 +146,10 @@ function generateSlug(title: string): string {
 
 /**
  * Normalize date to ISO format (YYYY-MM-DD)
- * Validates date format using regex and returns trimmed string
+ * Trims the date string - schema validation will enforce format requirements
  */
 function normalizeDate(date: string): string {
-  const trimmed = date.trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return trimmed; // Let schema validation reject non-matching values
-  }
-  return trimmed;
+  return date.trim();
 }
 
 /**

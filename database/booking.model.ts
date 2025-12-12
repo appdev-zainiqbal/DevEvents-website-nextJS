@@ -48,9 +48,18 @@ const bookingSchema = new Schema<IBooking>(
 bookingSchema.pre('save', async function () {
   // Only validate if eventId is being set or modified
   if (this.isModified('eventId') || this.isNew) {
-    const event = await Event.findById(this.eventId).select('_id');
-    if (!event) {
-      throw new Error(`Event with ID ${this.eventId} does not exist`);
+    try {
+      const event = await Event.findById(this.eventId).select('_id');
+      if (!event) {
+        throw new Error(`Event with ID ${this.eventId} does not exist`);
+      }
+    } catch (err) {
+      // If it's already our custom error, re-throw it
+      if (err instanceof Error && err.message.includes('does not exist')) {
+        throw err;
+      }
+      // Otherwise, wrap database errors in a consistent error message
+      throw new Error('Failed to validate event reference');
     }
   }
 });
