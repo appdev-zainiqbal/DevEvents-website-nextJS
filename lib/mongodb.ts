@@ -1,4 +1,5 @@
-import mongoose, { Connection } from 'mongoose';
+import mongooseLib from 'mongoose';
+import { Connection } from 'mongoose';
 
 /**
  * Global interface to extend NodeJS global type with mongoose connection cache
@@ -28,7 +29,7 @@ const cached: {
  * MongoDB connection options
  * These options help optimize the connection for production use
  */
-const mongooseOptions: mongoose.ConnectOptions = {
+const mongooseOptions: mongooseLib.ConnectOptions = {
   bufferCommands: false, // Disable mongoose buffering
   maxPoolSize: 10, // Maintain up to 10 socket connections
   serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
@@ -59,12 +60,12 @@ async function connectDB(): Promise<Connection> {
 
   // If we don't have a cached promise, create a new connection
   if (!cached.promise) {
-    const opts: mongoose.ConnectOptions = {
+    const opts: mongooseLib.ConnectOptions = {
       ...mongooseOptions,
     };
 
     // Create the connection promise
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+    cached.promise = mongooseLib.connect(MONGODB_URI, opts).then((mongooseInstance) => {
       return mongooseInstance.connection;
     });
   }

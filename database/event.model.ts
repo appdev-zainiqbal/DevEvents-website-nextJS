@@ -44,6 +44,7 @@ const eventSchema = new Schema<IEvent>(
       type: String,
       unique: true,
       trim: true,
+      required: [true, 'Event slug is required'],
       lowercase: true,
     },
     description: {
@@ -139,19 +140,14 @@ function generateSlug(title: string): string {
 
 /**
  * Normalize date to ISO format (YYYY-MM-DD)
- * Handles various date formats and converts to standard ISO format
+ * Validates date format using regex and returns trimmed string
  */
 function normalizeDate(date: string): string {
-  try {
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) {
-      throw new Error('Invalid date format');
-    }
-    return parsedDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD
-  } catch {
-    // If parsing fails, return original date (validation will catch if invalid)
-    return date.trim();
+  const trimmed = date.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed; // Let schema validation reject non-matching values
   }
+  return trimmed;
 }
 
 /**
