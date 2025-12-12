@@ -1,6 +1,9 @@
+"use client";
+
 import EventCard from "@/components/EventCard";
 import ExploreBtn from "@/components/ExploreBtn";
 import { events } from "@/lib/constants";
+import posthog from "posthog-js";
 
 const HomePage = () => {
   return (
@@ -23,6 +26,12 @@ const HomePage = () => {
             </li>
           ))}
         </ul>
+      </div>
+
+      <div>
+        <button onClick={() => posthog.capture("explore_btn_clicked")}>
+          Click me
+        </button>
       </div>
     </section>
   );
