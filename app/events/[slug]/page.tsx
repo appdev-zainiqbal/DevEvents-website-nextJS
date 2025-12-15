@@ -4,8 +4,11 @@ import { Booking, IEvent } from "@/database";
 import BookEvent from "@/components/BookEvent";
 import { GetSimilarEventsBySlug } from "@/app/api/actions/event.actions";
 import EventCard from "@/components/EventCard";
+import { cacheLife } from "next/dist/server/use-cache/cache-life";
 
 const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
+  "use cache";
+  cacheLife("hours");
   const { slug } = await params;
 
   const bookings = 10;
@@ -140,7 +143,7 @@ const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
             ) : (
               <p className="text-sm ">Be the first to book your spot!</p>
             )}
-            <BookEvent />
+            <BookEvent eventId={event._id} slug={slug} />
           </div>
         </aside>
       </section>

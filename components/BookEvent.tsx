@@ -1,22 +1,21 @@
 "use client";
+import { CreateBooking } from "@/app/api/actions/booking.actions";
+import posthog from "posthog-js";
 import React, { useState } from "react";
 
-const BookEvent = () => {
+const BookEvent = ({ eventId, slug }: { eventId: string; slug: string }) => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const response = await fetch("/api/bookings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-    if (response.ok) {
+    posthog.capture("event_booked");
+    const { success } = await CreateBooking({ eventId, email, slug });
+    if (success) {
       setSubmitted(true);
+      posthog.capture("event_booking_success");
     } else {
-      setSubmitted(false);
+      posthog.captureException("event_booking_failed");
+      console.error("Failed to book event");
     }
   };
   return (
