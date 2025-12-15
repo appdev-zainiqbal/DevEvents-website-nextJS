@@ -39,8 +39,7 @@ const getCachedEvent = unstable_cache(
   }
 );
 
-// Use dynamic rendering with caching (pages render at request time, but API responses are cached)
-export const dynamic = "force-dynamic";
+// Caching is handled by next.config.ts cacheComponents and unstable_cache
 
 const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
   const { slug } = await params;
