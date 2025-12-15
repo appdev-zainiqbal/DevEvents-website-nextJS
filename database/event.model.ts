@@ -180,10 +180,7 @@ function normalizeTime(time: string): string {
  * Pre-save hook: Generate slug, normalize date and time
  * Only regenerates slug if title has changed
  */
-eventSchema.pre('save', function (next) {
- 
-  const callback = next as (err?: Error) => void;
-
+eventSchema.pre('save', function () {
   // Generate slug only if title changed or slug doesn't exist
   if (this.isModified('title') || !this.slug) {
     this.slug = generateSlug(this.title);
@@ -198,39 +195,6 @@ eventSchema.pre('save', function (next) {
   if (this.isModified('time')) {
     this.time = normalizeTime(this.time);
   }
-
-//   // Validate required fields are non-empty
-//   const requiredFields: (keyof IEvent)[] = [
-//     'title',
-//     'description',
-//     'overview',
-//     'image',
-//     'venue',
-//     'location',
-//     'date',
-//     'time',
-//     'mode',
-//     'audience',
-//     'organizer',
-//   ];
-
-//   for (const field of requiredFields) {
-//     const value = doc[field];
-//     if (!value || (typeof value === 'string' && value.trim() === '')) {
-//       return callback(new Error(`${field} is required and cannot be empty`));
-//     }
-//   }
-
-//   // Validate arrays are non-empty
-//   if (!doc.agenda || doc.agenda.length === 0) {
-//     return callback(new Error('Agenda must contain at least one item'));
-//   }
-
-//   if (!doc.tags || doc.tags.length === 0) {
-//     return callback(new Error('Tags must contain at least one item'));
-//   }
-
-  return callback();
 });
 
 // Create unique index on slug for faster lookups

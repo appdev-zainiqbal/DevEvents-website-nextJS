@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -28,7 +30,12 @@ const EventCard = ({ title, image, location, date, time, slug }: Props) => {
 
       <div className="datetime">
         <div>
-          <Image src="/icons/calendar.svg" alt="calendar" width={14} height={14} />
+          <Image
+            src="/icons/calendar.svg"
+            alt="calendar"
+            width={14}
+            height={14}
+          />
           <p>{date}</p>
         </div>
         <div>

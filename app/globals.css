@@ -222,7 +222,11 @@
       }
 
       .booking {
-        @apply flex-1 w-full p-4 border-l border-gray-700;
+        @apply flex flex-1 w-full items-center justify-center lg:sticky lg:top-24 lg:self-start;
+
+        .book-event-btn {
+          @apply border-2 border-white text-white bg-transparent hover:bg-white hover:text-black transition-colors rounded-lg px-8 py-4 w-full lg:w-auto cursor-pointer;
+        }
 
         .signup-card {
           @apply bg-dark-100 border-dark-200 card-shadow flex w-full flex-col gap-6 rounded-[10px] border px-5 py-6;
@@ -260,14 +264,22 @@
       div {
         @apply flex flex-col gap-2;
 
+        label {
+          @apply text-light-100 text-sm font-medium;
+        }
+
         input {
-          @apply bg-dark-200 rounded-[6px] px-5 py-2.5;
+          @apply bg-dark-200 text-light-100 border border-dark-200 rounded-[6px] px-5 py-2.5 placeholder:text-light-200 focus:outline-none focus:border-primary;
         }
       }
 
       button {
         @apply bg-primary hover:bg-primary/90 w-full cursor-pointer items-center justify-center rounded-[6px] px-4 py-2.5 text-lg font-semibold text-black;
       }
+    }
+
+    p {
+      @apply text-light-100 text-sm;
     }
   }
 }
