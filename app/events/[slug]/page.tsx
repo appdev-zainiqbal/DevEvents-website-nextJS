@@ -4,10 +4,45 @@ import { Booking, IEvent } from "@/database";
 import BookEvent from "@/components/BookEvent";
 import { GetSimilarEventsBySlug } from "@/app/api/actions/event.actions";
 import EventCard from "@/components/EventCard";
-import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { unstable_cache } from "next/cache";
+
+// Cache the event fetch for 1 hour
+const getCachedEvent = unstable_cache(
+  async (slug: string) => {
+    try {
+      // Use NEXT_PUBLIC_BASE_URL if available
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      if (!baseUrl) {
+        console.warn("NEXT_PUBLIC_BASE_URL not set");
+        return null;
+      }
+
+      const request = await fetch(`${baseUrl}/api/events/${slug}`, {
+        cache: "no-store",
+      });
+
+      if (!request.ok) {
+        return null;
+      }
+
+      const data = await request.json();
+      return data?.event || null;
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      return null;
+    }
+  },
+  ["event-details"],
+  {
+    revalidate: 3600, // Revalidate every hour
+    tags: ["events"],
+  }
+);
+
+// Use dynamic rendering with caching (pages render at request time, but API responses are cached)
+export const dynamic = "force-dynamic";
+
 const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
-  "use cache";
-  cacheLife("hours");
   const { slug } = await params;
   const bookings = 10;
 
@@ -53,16 +88,9 @@ const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
       </div>
     );
   };
-  // Use absolute URL for server-side fetch - construct from environment or use localhost
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  const request = await fetch(`${baseUrl}/api/events/${slug}`);
 
-  if (!request.ok) {
-    return notFound();
-  }
-
-  const data = await request.json();
-  const event = data?.event;
+  // Fetch cached event data
+  const event = await getCachedEvent(slug);
 
   if (!event || !event.description) return notFound();
 

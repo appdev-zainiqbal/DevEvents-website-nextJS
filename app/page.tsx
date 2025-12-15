@@ -1,21 +1,47 @@
 import EventCard from "@/components/EventCard";
 import ExploreBtn from "@/components/ExploreBtn";
 import PostHogButton from "@/components/PostHogButton";
+import { unstable_cache } from "next/cache";
+
+// Cache the events fetch for 1 hour (3600 seconds)
+const getCachedEvents = unstable_cache(
+  async () => {
+    try {
+      // Use NEXT_PUBLIC_BASE_URL if available, otherwise construct from request
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      if (!baseUrl) {
+        console.warn("NEXT_PUBLIC_BASE_URL not set, returning empty events");
+        return [];
+      }
+
+      const request = await fetch(`${baseUrl}/api/events`, {
+        cache: "no-store",
+      });
+
+      if (!request.ok) {
+        throw new Error("Failed to fetch events");
+      }
+
+      const data = await request.json();
+      return data?.events || [];
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      return [];
+    }
+  },
+  ["events-list"],
+  {
+    revalidate: 3600, // Revalidate every hour
+    tags: ["events"],
+  }
+);
+
+// Use dynamic rendering with caching (pages render at request time, but API responses are cached)
+export const dynamic = "force-dynamic";
 
 const HomePage = async () => {
   try {
-    // Fetch events from API endpoint instead of directly querying the database
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const request = await fetch(`${baseUrl}/api/events`, {
-      cache: "no-store", // or 'force-cache' for caching
-    });
-
-    if (!request.ok) {
-      throw new Error("Failed to fetch events");
-    }
-
-    const data = await request.json();
-    const serializedEvents = data?.events || [];
+    const serializedEvents = await getCachedEvents();
 
     return (
       <section>
