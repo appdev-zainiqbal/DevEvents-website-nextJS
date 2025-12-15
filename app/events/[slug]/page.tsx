@@ -6,6 +6,7 @@ import BookEvent from "@/components/BookEvent";
 import { IEvent } from "@/database";
 import { GetSimilarEventsBySlug } from "@/app/api/actions/event.actions";
 import { cacheLife } from "next/cache";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 /* -------------------------------------------------
    Cached fetch using Next.js 16 Cache Components
@@ -14,7 +15,7 @@ async function getEventBySlug(slug: string) {
   "use cache";
   cacheLife("hours"); // ⏱ cache for ~1 hour
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl = getBaseUrl();
 
   const res = await fetch(`${baseUrl}/api/events/${slug}`, {
     next: { revalidate: 3600 },
