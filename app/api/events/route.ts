@@ -123,8 +123,10 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    const events = await Event.find().sort({ createdAt: -1 });
-    return NextResponse.json({ message: 'Events fetched successfully', events }, { status: 200 });
+    const events = await Event.find().sort({ createdAt: -1 }).lean();
+    // Serialize Mongoose documents to plain objects for JSON response
+    const serializedEvents = JSON.parse(JSON.stringify(events));
+    return NextResponse.json({ message: 'Events fetched successfully', events: serializedEvents }, { status: 200 });
   }
   catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to fetch events' }, { status: 500 });

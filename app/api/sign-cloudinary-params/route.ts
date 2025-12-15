@@ -1,33 +1,47 @@
 import { v2 as cloudinary } from "cloudinary";
 
-// Validate required environment variables
-const requiredEnvVars = {
-  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
-};
+// Configure Cloudinary - validation happens at runtime in the handler
+function getCloudinaryConfig() {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-for (const [key, value] of Object.entries(requiredEnvVars)) {
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Missing required Cloudinary environment variables");
   }
+
+  return {
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+  };
 }
 
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { paramsToSign } = body;
+  try {
+    // Validate and configure Cloudinary at runtime, not at build time
+    const config = getCloudinaryConfig();
+    cloudinary.config(config);
 
-  const signature = cloudinary.utils.api_sign_request(
-    paramsToSign,
-    process.env.CLOUDINARY_API_SECRET!
-  );
+    const body = await request.json();
+    const { paramsToSign } = body;
 
-  return Response.json({ signature });
+    const signature = cloudinary.utils.api_sign_request(
+      paramsToSign,
+      config.api_secret
+    );
+
+    return Response.json({ signature });
+  } catch (error) {
+    return Response.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to sign Cloudinary parameters",
+      },
+      { status: 500 }
+    );
+  }
 }
 

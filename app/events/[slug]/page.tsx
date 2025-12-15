@@ -5,12 +5,10 @@ import BookEvent from "@/components/BookEvent";
 import { GetSimilarEventsBySlug } from "@/app/api/actions/event.actions";
 import EventCard from "@/components/EventCard";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
-
 const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
   "use cache";
   cacheLife("hours");
   const { slug } = await params;
-
   const bookings = 10;
 
   const similarEvents: IEvent[] = await GetSimilarEventsBySlug(slug);
@@ -143,7 +141,7 @@ const EventDetailsPage = async ({ params }: { params: { slug: string } }) => {
             ) : (
               <p className="text-sm ">Be the first to book your spot!</p>
             )}
-            <BookEvent eventId={event._id} slug={slug} />
+            <BookEvent eventId={String(event._id)} slug={slug} />
           </div>
         </aside>
       </section>

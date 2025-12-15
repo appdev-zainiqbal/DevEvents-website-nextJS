@@ -1,20 +1,21 @@
 import EventCard from "@/components/EventCard";
 import ExploreBtn from "@/components/ExploreBtn";
 import PostHogButton from "@/components/PostHogButton";
-import connectDB from "@/lib/mongodb";
-import { Event } from "@/database";
-import { cacheLife } from "next/dist/server/use-cache/cache-life";
 
 const HomePage = async () => {
-  "use cache";
-  cacheLife("hours");
   try {
-    await connectDB();
-    const events = await Event.find().sort({ createdAt: -1 }).lean();
+    // Fetch events from API endpoint instead of directly querying the database
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const request = await fetch(`${baseUrl}/api/events`, {
+      cache: "no-store", // or 'force-cache' for caching
+    });
 
-    // Serialize events to plain objects for Client Components
-    // This converts all Mongoose ObjectIds and Dates to plain strings/objects
-    const serializedEvents = JSON.parse(JSON.stringify(events));
+    if (!request.ok) {
+      throw new Error("Failed to fetch events");
+    }
+
+    const data = await request.json();
+    const serializedEvents = data?.events || [];
 
     return (
       <section>
@@ -33,8 +34,15 @@ const HomePage = async () => {
             {serializedEvents &&
               serializedEvents.length > 0 &&
               serializedEvents.map((event: any) => (
-                <li key={event._id || event.title}>
-                  <EventCard {...event} />
+                <li key={String(event._id) || event.title}>
+                  <EventCard
+                    title={event.title}
+                    image={event.image}
+                    slug={event.slug}
+                    location={event.location}
+                    date={event.date}
+                    time={event.time}
+                  />
                 </li>
               ))}
           </ul>
