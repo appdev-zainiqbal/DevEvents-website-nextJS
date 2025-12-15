@@ -197,12 +197,6 @@ eventSchema.pre('save', function () {
   }
 });
 
-// Create unique index on slug for faster lookups
-eventSchema.index({ slug: 1 }, { unique: true });
-
-/**
- * Event model
- */
 const Event = models.Event || model<IEvent>('Event', eventSchema);
 
 export default Event;

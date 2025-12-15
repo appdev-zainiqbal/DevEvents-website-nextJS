@@ -1,46 +1,14 @@
 import EventCard from "@/components/EventCard";
 import ExploreBtn from "@/components/ExploreBtn";
 import PostHogButton from "@/components/PostHogButton";
-import { unstable_cache } from "next/cache";
+import { getEvents } from "@/lib/events";
 
-// Cache the events fetch for 1 hour (3600 seconds)
-const getCachedEvents = unstable_cache(
-  async () => {
-    try {
-      // Use NEXT_PUBLIC_BASE_URL if available, otherwise construct from request
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      if (!baseUrl) {
-        console.warn("NEXT_PUBLIC_BASE_URL not set, returning empty events");
-        return [];
-      }
-
-      const request = await fetch(`${baseUrl}/api/events`, {
-        cache: "no-store",
-      });
-
-      if (!request.ok) {
-        throw new Error("Failed to fetch events");
-      }
-
-      const data = await request.json();
-      return data?.events || [];
-    } catch (error) {
-      console.error("Error fetching events:", error);
-      return [];
-    }
-  },
-  ["events-list"],
-  {
-    revalidate: 3600, // Revalidate every hour
-    tags: ["events"],
-  }
-);
 
 // Caching is handled by next.config.ts cacheComponents and unstable_cache
 
-const HomePage = async () => {
+const HomePage = async () => {ExploreBtn
   try {
-    const serializedEvents = await getCachedEvents();
+      const serializedEvents = await getEvents();
 
     return (
       <section>
